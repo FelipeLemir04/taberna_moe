@@ -56,7 +56,7 @@ class BebidasScreen extends StatelessWidget {
                           cart.addToDebt(b.price * (cart.items[b.id]?.quantity ?? 0)); // No ideal: ejemplo
                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cantidad agregada al carrito.')));
                         },
-                        child: const Text('Agregar a deuda'),
+                        child: const Text('Agregar al Carrito'),
                       )
                     ],
                   ),

@@ -9,7 +9,6 @@ import 'pagar_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/cart_provider.dart';
 
-
 class MainMenu extends StatelessWidget {
   const MainMenu({Key? key}) : super(key: key);
 
@@ -20,7 +19,7 @@ class MainMenu extends StatelessWidget {
     // 🔹 Obtener CartProvider
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
 
-    // 🔹 Asignar la función que muestra el SnackBar
+    // 🔹 Asignar la función que muestra el SnackBar cada múltiplo de 5 cervezas
     cartProvider.onBeerLimitReached = () {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -74,7 +73,7 @@ class MainMenu extends StatelessWidget {
                 runSpacing: 20,
                 children: [
                   MenuCard(
-                    imagePath: 'assets/images/bebidas/duff_original.jpg',
+                    imagePath: 'assets/images/bebidas/duff.jpg',
                     title: 'BEBIDAS',
                     onTap: () => Navigator.push(
                       context,
@@ -90,13 +89,11 @@ class MainMenu extends StatelessWidget {
                     ),
                   ),
                   MenuCard(
-                    imagePath:
-                    'assets/images/pedidos_habituales/pedido.jpg',
+                    imagePath: 'assets/images/pedidos_habituales/pedido.jpg',
                     title: 'HABITUALES',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (_) => PedidosHabitualesScreen()),
+                      MaterialPageRoute(builder: (_) => PedidosHabitualesScreen()),
                     ),
                   ),
                   MenuCard(
@@ -132,3 +129,4 @@ class MainMenu extends StatelessWidget {
     );
   }
 }
+

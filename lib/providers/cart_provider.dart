@@ -10,7 +10,7 @@ class CartProvider with ChangeNotifier {
   int _dailyBeerCount = 0;
   String? _lastResetDate; // yyyy-MM-dd
 
-  // 🔹 Nuevo: callback para advertencia al superar 5 cervezas
+  // 🔹 Callback para advertencia cada 5 cervezas
   VoidCallback? onBeerLimitReached;
 
   CartProvider() {
@@ -41,12 +41,12 @@ class CartProvider with ChangeNotifier {
       );
     }
 
-    // If item is a beer (we consider beers have id starting with "beer")
+    // 🟡 Si es cerveza (id comienza con "beer")
     if (item.id.startsWith('beer') && amount > 0) {
       _dailyBeerCount += amount;
 
-      // 🔹 Nuevo: mostrar advertencia si supera 5 cervezas
-      if (_dailyBeerCount > 5) {
+      // 🔹 Mostrar advertencia cada múltiplo de 5
+      if (_dailyBeerCount % 5 == 0) {
         if (onBeerLimitReached != null) {
           onBeerLimitReached!();
         }
@@ -62,10 +62,12 @@ class CartProvider with ChangeNotifier {
     final existing = _items[id]!;
     existing.quantity -= amount;
     if (existing.quantity <= 0) _items.remove(id);
-    // If it's beer subtract
+
+    // 🔹 Si es cerveza, restar del contador
     if (id.startsWith('beer') && amount > 0) {
       _dailyBeerCount = (_dailyBeerCount - amount).clamp(0, 999999);
     }
+
     notifyListeners();
     saveToPrefs();
   }
@@ -76,7 +78,7 @@ class CartProvider with ChangeNotifier {
     saveToPrefs();
   }
 
-  // Debt handling
+  // 🧾 Manejo de deuda
   void addToDebt(double amount) {
     _debt += amount;
     notifyListeners();
@@ -89,11 +91,12 @@ class CartProvider with ChangeNotifier {
     saveToPrefs();
   }
 
-  // Daily reset logic
+  // 🔄 Reinicio diario del contador
   Future<void> checkDailyReset() async {
     final prefs = await SharedPreferences.getInstance();
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     _lastResetDate = prefs.getString('lastResetDate') ?? today;
+
     if (_lastResetDate != today) {
       _dailyBeerCount = 0;
       _lastResetDate = today;
@@ -103,7 +106,7 @@ class CartProvider with ChangeNotifier {
     }
   }
 
-  // persistence
+  // 💾 Persistencia
   Future<void> saveToPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final itemsJson = _items.map((k, v) => MapEntry(k, {
@@ -117,8 +120,10 @@ class CartProvider with ChangeNotifier {
     prefs.setString('cart_items', jsonEncode(itemsJson));
     prefs.setDouble('debt', _debt);
     prefs.setInt('dailyBeerCount', _dailyBeerCount);
-    prefs.setString('lastResetDate',
-        _lastResetDate ?? DateFormat('yyyy-MM-dd').format(DateTime.now()));
+    prefs.setString(
+      'lastResetDate',
+      _lastResetDate ?? DateFormat('yyyy-MM-dd').format(DateTime.now()),
+    );
   }
 
   Future<void> _loadFromPrefs() async {
@@ -137,12 +142,13 @@ class CartProvider with ChangeNotifier {
         );
       });
     }
+
     _debt = prefs.getDouble('debt') ?? 0.0;
     _dailyBeerCount = prefs.getInt('dailyBeerCount') ?? 0;
     _lastResetDate = prefs.getString('lastResetDate') ??
         DateFormat('yyyy-MM-dd').format(DateTime.now());
+
     await checkDailyReset();
     notifyListeners();
   }
 }
-

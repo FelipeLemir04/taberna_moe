@@ -62,7 +62,7 @@ class ComidaScreen extends StatelessWidget {
                           cart.addToDebt(c.price * (cart.items[c.id]?.quantity ?? 0));
                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Agregado a deuda.')));
                         },
-                        child: const Text('Agregar a deuda'))
+                        child: const Text('Agregar al Carrito'))
                   ],
                 )
               ],
