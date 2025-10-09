@@ -1,0 +1,30 @@
+name: taberna_moe
+description: App de ejemplo - Taberna Moe
+publish_to: "none"
+version: 1.0.0+1
+environment:
+  sdk: ">=2.18.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.0.5
+  shared_preferences: ^2.1.1
+  google_maps_flutter: ^2.4.1
+  intl: ^0.18.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/logo/
+    - assets/images/bebidas/
+    - assets/images/comida/
+    - assets/images/pagar/
+    - assets/images/ubicacion/
+    - assets/images/pedidos_habituales/
+    - assets/images/contador/
