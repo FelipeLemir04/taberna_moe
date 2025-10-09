@@ -10,6 +10,9 @@ class CartProvider with ChangeNotifier {
   int _dailyBeerCount = 0;
   String? _lastResetDate; // yyyy-MM-dd
 
+  // 🔹 Nuevo: callback para advertencia al superar 5 cervezas
+  VoidCallback? onBeerLimitReached;
+
   CartProvider() {
     _loadFromPrefs();
   }
@@ -41,7 +44,15 @@ class CartProvider with ChangeNotifier {
     // If item is a beer (we consider beers have id starting with "beer")
     if (item.id.startsWith('beer') && amount > 0) {
       _dailyBeerCount += amount;
+
+      // 🔹 Nuevo: mostrar advertencia si supera 5 cervezas
+      if (_dailyBeerCount > 5) {
+        if (onBeerLimitReached != null) {
+          onBeerLimitReached!();
+        }
+      }
     }
+
     notifyListeners();
     saveToPrefs();
   }
@@ -106,7 +117,8 @@ class CartProvider with ChangeNotifier {
     prefs.setString('cart_items', jsonEncode(itemsJson));
     prefs.setDouble('debt', _debt);
     prefs.setInt('dailyBeerCount', _dailyBeerCount);
-    prefs.setString('lastResetDate', _lastResetDate ?? DateFormat('yyyy-MM-dd').format(DateTime.now()));
+    prefs.setString('lastResetDate',
+        _lastResetDate ?? DateFormat('yyyy-MM-dd').format(DateTime.now()));
   }
 
   Future<void> _loadFromPrefs() async {
@@ -127,8 +139,10 @@ class CartProvider with ChangeNotifier {
     }
     _debt = prefs.getDouble('debt') ?? 0.0;
     _dailyBeerCount = prefs.getInt('dailyBeerCount') ?? 0;
-    _lastResetDate = prefs.getString('lastResetDate') ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
+    _lastResetDate = prefs.getString('lastResetDate') ??
+        DateFormat('yyyy-MM-dd').format(DateTime.now());
     await checkDailyReset();
     notifyListeners();
   }
 }
+

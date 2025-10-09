@@ -6,13 +6,30 @@ import 'comida_screen.dart';
 import 'ubicacion_screen.dart';
 import 'contador_screen.dart';
 import 'pagar_screen.dart';
+import 'package:provider/provider.dart';
+import '../providers/cart_provider.dart';
+
 
 class MainMenu extends StatelessWidget {
   const MainMenu({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final bg = const Color(0xFFFFD100); // Amarillo estilo Simpsons
+    final bg = const Color(0xFFFFD100);
+
+    // 🔹 Obtener CartProvider
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+
+    // 🔹 Asignar la función que muestra el SnackBar
+    cartProvider.onBeerLimitReached = () {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('¡Hey! Recuerda tomar agua antes de seguir bebiendo 🍺💧'),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 4),
+        ),
+      );
+    };
 
     return Scaffold(
       backgroundColor: bg,
