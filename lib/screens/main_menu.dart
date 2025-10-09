@@ -3,7 +3,6 @@ import 'package:taberna_moe/screens/pedidos_habituales_screen.dart';
 import '../widgets/menu_card.dart';
 import 'bebidas_screen.dart';
 import 'comida_screen.dart';
-import 'pedidos_habituales_screen.dart';
 import 'ubicacion_screen.dart';
 import 'contador_screen.dart';
 import 'pagar_screen.dart';
@@ -13,7 +12,7 @@ class MainMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = const Color(0xFFFFD100); // amarillo estilo Simpsons
+    final bg = const Color(0xFFFFD100); // Amarillo estilo Simpsons
 
     return Scaffold(
       backgroundColor: bg,
@@ -27,21 +26,31 @@ class MainMenu extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // 🟦 LOGO grande centrado arriba
+            // 🟦 LOGO + Texto "BIENVENIDO!"
             Center(
               child: Column(
                 children: [
                   Image.asset(
-                    'assets/images/logo/logo_taberna.png', // tu logo
-                    height: 180,
+                    'assets/images/logo/logo_taberna.png',
+                    height: 400, // 🔹 Logo más grande
                     fit: BoxFit.contain,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 15),
+                  const Text(
+                    '¡BIENVENIDO!',
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 25),
                 ],
               ),
             ),
 
-            // 🟨 Menú principal
+            // 🟨 Menú principal con grupos de imágenes
             Center(
               child: Wrap(
                 spacing: 20,
@@ -64,7 +73,8 @@ class MainMenu extends StatelessWidget {
                     ),
                   ),
                   MenuCard(
-                    imagePath: 'assets/images/pedidos_habituales/pedido.jpg',
+                    imagePath:
+                    'assets/images/pedidos_habituales/pedido.jpg',
                     title: 'HABITUALES',
                     onTap: () => Navigator.push(
                       context,
