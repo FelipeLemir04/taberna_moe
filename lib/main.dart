@@ -20,7 +20,7 @@ class TabernaApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.deepOrange,
         ),
-        home: const MainMenu(),
+        home: MainMenu(),
         debugShowCheckedModeBanner: false,
       ),
     );
