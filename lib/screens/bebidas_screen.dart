@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/item.dart';
 import '../providers/cart_provider.dart';
 
-class BebidasScreen extends StatelessWidget {
+class BebidasScreen extends StatefulWidget {
   BebidasScreen({Key? key}) : super(key: key);
 
   final List<Item> beers = [
@@ -14,8 +14,30 @@ class BebidasScreen extends StatelessWidget {
   ];
 
   @override
+  State<BebidasScreen> createState() => _BebidasScreenState();
+}
+
+class _BebidasScreenState extends State<BebidasScreen> {
+  // Selección local por ítem (no se añade al carrito hasta "¡QUIERO ESTA CERVEZA!" o PONER individual)
+  final Map<String, int> _selections = {};
+
+  int _sel(String id) => _selections[id] ?? 0;
+
+  void _inc(String id) => setState(() => _selections[id] = _sel(id) + 1);
+
+  void _dec(String id) {
+    final cur = _sel(id);
+    if (cur <= 0) return;
+    setState(() {
+      _selections[id] = cur - 1;
+      if (_selections[id] == 0) _selections.remove(id);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -26,23 +48,25 @@ class BebidasScreen extends StatelessWidget {
       ),
       body: ListView.builder(
         padding: const EdgeInsets.all(8),
-        itemCount: beers.length,
+        itemCount: widget.beers.length,
         itemBuilder: (context, idx) {
-          final b = beers[idx];
-          final qty = cart.items[b.id]?.quantity ?? 0;
+          final b = widget.beers[idx];
+          final localQty = _sel(b.id);
+          final inCartQty = cart.items[b.id]?.quantity ?? 0;
+
           return Card(
             margin: const EdgeInsets.symmetric(vertical: 6),
             elevation: 2,
             child: Column(
               children: [
-                // Imagen más grande
+                // Imagen
                 Container(
                   height: 250,
                   width: double.infinity,
                   child: Image.asset(b.image, fit: BoxFit.cover),
                 ),
 
-                // Nombre y precio más grandes
+                // Nombre y precio
                 Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: Row(
@@ -68,33 +92,30 @@ class BebidasScreen extends StatelessWidget {
                   ),
                 ),
 
-                // Contador grande y simple
+                // Controles locales
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   color: Colors.grey[100],
                   child: Row(
                     children: [
-                      // Botón QUITAR grande
+                      // QUITAR (selección local)
                       Expanded(
                         child: SizedBox(
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: () => cart.removeItem(b.id),
+                            onPressed: () => _dec(b.id),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red,
                               foregroundColor: Colors.white,
                             ),
-                            child: const Text(
-                              'QUITAR',
-                              style: TextStyle(fontSize: 16),
-                            ),
+                            child: const Text('QUITAR', style: TextStyle(fontSize: 16)),
                           ),
                         ),
                       ),
 
                       const SizedBox(width: 12),
 
-                      // Cantidad grande y visible
+                      // Cantidad local
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
@@ -102,31 +123,22 @@ class BebidasScreen extends StatelessWidget {
                           border: Border.all(color: Colors.grey),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(
-                          qty.toString(),
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: Text(localQty.toString(), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                       ),
 
                       const SizedBox(width: 12),
 
-                      // Botón PONER grande
+                      // PONER (selección local)
                       Expanded(
                         child: SizedBox(
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: () => cart.addItem(b, amount: 1),
+                            onPressed: () => _inc(b.id),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green,
                               foregroundColor: Colors.white,
                             ),
-                            child: const Text(
-                              'PONER',
-                              style: TextStyle(fontSize: 16),
-                            ),
+                            child: const Text('PONER', style: TextStyle(fontSize: 16)),
                           ),
                         ),
                       ),
@@ -134,7 +146,7 @@ class BebidasScreen extends StatelessWidget {
                   ),
                 ),
 
-                // Botón principal grande
+                // Botón principal: agrega la cantidad local (o 1 si no seleccionó)
                 Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: SizedBox(
@@ -142,15 +154,16 @@ class BebidasScreen extends StatelessWidget {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
-                        cart.addItem(b, amount: qty == 0 ? 1 : qty);
+                        final amountToAdd = localQty > 0 ? localQty : 1;
+                        cart.addItem(b, amount: amountToAdd);
+
+                        // limpiar selección local
+                        setState(() {
+                          _selections.remove(b.id);
+                        });
+
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              '¡Cerveza agregada!',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                            backgroundColor: Colors.green,
-                          ),
+                          SnackBar(content: Text('¡${b.name} agregada x$amountToAdd!'), backgroundColor: Colors.green),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -159,14 +172,18 @@ class BebidasScreen extends StatelessWidget {
                       ),
                       child: const Text(
                         '¡QUIERO ESTA CERVEZA!',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
                 ),
+
+                // Info de carrito si ya hay unidades
+                if (inCartQty > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: Text('En carrito: x$inCartQty', style: const TextStyle(color: Colors.grey)),
+                  ),
               ],
             ),
           );

@@ -26,7 +26,7 @@ class _PagarScreenState extends State<PagarScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // 🟢 DEUDA ACTUAL
+            // DEUDA ACTUAL
             Card(
               color: Colors.red[100],
               child: Padding(
@@ -34,22 +34,10 @@ class _PagarScreenState extends State<PagarScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'DEBO:',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red,
-                      ),
-                    ),
-                    Text(
-                      '\$${cart.debt.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red,
-                      ),
-                    ),
+                    const Text('DEBO:',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.red)),
+                    Text('\$${cart.debt.toStringAsFixed(0)}',
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.red)),
                   ],
                 ),
               ),
@@ -57,7 +45,7 @@ class _PagarScreenState extends State<PagarScreen> {
 
             const SizedBox(height: 20),
 
-            // 🟡 PAGAR DEUDA COMPLETA
+            // PAGAR DEUDA COMPLETA
             if (cart.debt > 0)
               SizedBox(
                 width: double.infinity,
@@ -65,64 +53,30 @@ class _PagarScreenState extends State<PagarScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     cart.payDebt(cart.debt);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          '¡DEUDA PAGADA!',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('¡DEUDA PAGADA!')));
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text(
-                    'PAGAR TODA LA DEUDA',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                  child: const Text('PAGAR TODA LA DEUDA', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
               ),
 
             const SizedBox(height: 30),
 
-            // 🟠 PEDIDO ACTUAL
+            // PEDIDO ACTUAL
             Card(
               color: Colors.amber[100],
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'PEDIDO ACTUAL:',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    Text(
-                      '\$${cart.total.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
+                child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  const Text('PEDIDO ACTUAL:', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text('\$${cart.total.toStringAsFixed(0)}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                ]),
               ),
             ),
 
             const SizedBox(height: 20),
 
-            // 🟢 PAGAR AHORA
+            // PAGAR AHORA
             SizedBox(
               width: double.infinity,
               height: 60,
@@ -131,34 +85,25 @@ class _PagarScreenState extends State<PagarScreen> {
                     ? null
                     : () {
                   final totalCart = cart.total;
+                  // Primero confirmar ítems (aquí se registran las cervezas en el contador)
+                  cart.confirmItemsAtPayment();
+                  // Luego limpiar carrito
                   cart.clearCart();
+
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        '¡PEDIDO LISTO! \$${totalCart.toStringAsFixed(0)}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      backgroundColor: Colors.green,
-                    ),
+                    SnackBar(content: Text('¡PEDIDO LISTO! \$${totalCart.toStringAsFixed(0)}'), backgroundColor: Colors.green),
                   );
+
+                  Navigator.pop(context);
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text(
-                  'PAGAR AHORA',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                child: const Text('PAGAR AHORA', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               ),
             ),
 
             const SizedBox(height: 10),
 
-            // 🔴 PAGAR DESPUÉS
+            // PAGAR DESPUÉS
             SizedBox(
               width: double.infinity,
               height: 60,
@@ -167,54 +112,33 @@ class _PagarScreenState extends State<PagarScreen> {
                     ? null
                     : () {
                   final totalCart = cart.total;
+                  // confirmar items (se cuenta cerveza)
+                  cart.confirmItemsAtPayment();
+                  // agregar a deuda con el total actual
                   cart.addToDebt(totalCart);
+                  // limpiar carrito
                   cart.clearCart();
+
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'AGREGADO A DEUDA: \$${totalCart.toStringAsFixed(0)}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      backgroundColor: Colors.orange,
-                    ),
+                    SnackBar(content: Text('AGREGADO A DEUDA: \$${totalCart.toStringAsFixed(0)}'), backgroundColor: Colors.orange),
                   );
+
+                  Navigator.pop(context);
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text(
-                  'PAGAR DESPUÉS',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white),
+                child: const Text('PAGAR DESPUÉS', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               ),
             ),
 
             const SizedBox(height: 30),
 
-            // 🟤 CARRITO ACTUAL
-            const Text(
-              'MI PEDIDO:',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
+            const Text('MI PEDIDO:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
 
             // LISTA SIMPLE DEL CARRITO
             Expanded(
               child: cart.items.isEmpty
-                  ? const Center(
-                child: Text(
-                  'CARRITO VACÍO',
-                  style: TextStyle(fontSize: 18, color: Colors.grey),
-                ),
-              )
+                  ? const Center(child: Text('CARRITO VACÍO', style: TextStyle(fontSize: 18, color: Colors.grey)))
                   : ListView(
                 children: cart.items.values.map((i) {
                   return Card(
@@ -225,27 +149,13 @@ class _PagarScreenState extends State<PagarScreen> {
                         height: 40,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
-                          image: DecorationImage(
-                            image: AssetImage(i.image),
-                            fit: BoxFit.cover,
-                          ),
+                          image: DecorationImage(image: AssetImage(i.image), fit: BoxFit.cover),
                         ),
                       ),
-                      title: Text(
-                        i.name,
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      subtitle: Text(
-                        'x${i.quantity}',
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                      trailing: Text(
-                        '\$${(i.price * i.quantity).toStringAsFixed(0)}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      title: Text(i.name, style: const TextStyle(fontSize: 16)),
+                      subtitle: Text('x${i.quantity}', style: const TextStyle(fontSize: 14)),
+                      trailing: Text('\$${(i.price * i.quantity).toStringAsFixed(0)}',
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   );
                 }).toList(),
@@ -257,3 +167,4 @@ class _PagarScreenState extends State<PagarScreen> {
     );
   }
 }
+

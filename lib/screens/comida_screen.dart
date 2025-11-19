@@ -3,7 +3,7 @@ import '../models/item.dart';
 import 'package:provider/provider.dart';
 import '../providers/cart_provider.dart';
 
-class ComidaScreen extends StatelessWidget {
+class ComidaScreen extends StatefulWidget {
   ComidaScreen({Key? key}) : super(key: key);
 
   final List<Item> comidas = [
@@ -31,8 +31,34 @@ class ComidaScreen extends StatelessWidget {
   ];
 
   @override
+  State<ComidaScreen> createState() => _ComidaScreenState();
+}
+
+class _ComidaScreenState extends State<ComidaScreen> {
+  // Selecciones locales (no stored in cart until "¡QUIERO ESTO!" se presiona)
+  final Map<String, int> _selections = {};
+
+  int _getSelection(String id) => _selections[id] ?? 0;
+
+  void _incSelection(String id) {
+    setState(() {
+      _selections[id] = _getSelection(id) + 1;
+    });
+  }
+
+  void _decSelection(String id) {
+    final cur = _getSelection(id);
+    if (cur <= 0) return;
+    setState(() {
+      _selections[id] = cur - 1;
+      if (_selections[id] == 0) _selections.remove(id);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -43,10 +69,12 @@ class ComidaScreen extends StatelessWidget {
       ),
       body: ListView.builder(
         padding: const EdgeInsets.all(8),
-        itemCount: comidas.length,
+        itemCount: widget.comidas.length,
         itemBuilder: (context, idx) {
-          final c = comidas[idx];
-          final qty = cart.items[c.id]?.quantity ?? 0;
+          final c = widget.comidas[idx];
+          final localQty = _getSelection(c.id);
+          final inCartQty = cart.items[c.id]?.quantity ?? 0;
+
           return Card(
             margin: const EdgeInsets.symmetric(vertical: 6),
             elevation: 2,
@@ -59,7 +87,7 @@ class ComidaScreen extends StatelessWidget {
                   child: Image.asset(c.image, fit: BoxFit.cover),
                 ),
 
-                // Nombre y precio más grandes
+                // Nombre y precio
                 Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: Row(
@@ -85,18 +113,18 @@ class ComidaScreen extends StatelessWidget {
                   ),
                 ),
 
-                // Contador grande y simple
+                // Controles: QUITAR (local), cantidad (local), PONER (local)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   color: Colors.grey[100],
                   child: Row(
                     children: [
-                      // Botón QUITAR grande
+                      // QUITAR (desde selección local)
                       Expanded(
                         child: SizedBox(
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: () => cart.removeItem(c.id),
+                            onPressed: () => _decSelection(c.id),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red,
                               foregroundColor: Colors.white,
@@ -111,7 +139,7 @@ class ComidaScreen extends StatelessWidget {
 
                       const SizedBox(width: 12),
 
-                      // Cantidad grande y visible
+                      // Cantidad local visible (si no hay selección se muestra 0)
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
@@ -120,7 +148,7 @@ class ComidaScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          qty.toString(),
+                          localQty.toString(),
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -130,12 +158,12 @@ class ComidaScreen extends StatelessWidget {
 
                       const SizedBox(width: 12),
 
-                      // Botón PONER grande
+                      // PONER (a selección local)
                       Expanded(
                         child: SizedBox(
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: () => cart.addItem(c, amount: 1),
+                            onPressed: () => _incSelection(c.id),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green,
                               foregroundColor: Colors.white,
@@ -151,7 +179,7 @@ class ComidaScreen extends StatelessWidget {
                   ),
                 ),
 
-                // Botón principal grande
+                // Botón principal: agrega la cantidad seleccionada (o 1 si no seleccionó)
                 Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: SizedBox(
@@ -159,13 +187,17 @@ class ComidaScreen extends StatelessWidget {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
-                        cart.addItem(c, amount: qty == 0 ? 1 : qty);
+                        final amountToAdd = localQty > 0 ? localQty : 1;
+                        cart.addItem(c, amount: amountToAdd);
+
+                        // limpiar selección local para ese item
+                        setState(() {
+                          _selections.remove(c.id);
+                        });
+
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(
-                              '¡${c.name} agregada!',
-                              style: const TextStyle(fontSize: 16),
-                            ),
+                            content: Text('¡${c.name} agregada x$amountToAdd!'),
                             backgroundColor: Colors.green,
                           ),
                         );
@@ -184,6 +216,13 @@ class ComidaScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+
+                // Mostrar si ya hay unidades en el carrito (informativo)
+                if (inCartQty > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: Text('En carrito: x$inCartQty', style: const TextStyle(color: Colors.grey)),
+                  ),
               ],
             ),
           );
@@ -191,5 +230,4 @@ class ComidaScreen extends StatelessWidget {
       ),
     );
   }
-
 }
