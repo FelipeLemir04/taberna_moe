@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:taberna_moe/screens/pedidos_habituales_screen.dart';
+import 'package:provider/provider.dart';
+
 import '../widgets/menu_card.dart';
+import '../providers/cart_provider.dart';
+
 import 'bebidas_screen.dart';
 import 'comida_screen.dart';
 import 'ubicacion_screen.dart';
-import 'contador_screen.dart';
+import 'pedidos_habituales_screen.dart';
 import 'pagar_screen.dart';
-import 'package:provider/provider.dart';
-import '../providers/cart_provider.dart';
 
 class MainMenu extends StatelessWidget {
   const MainMenu({Key? key}) : super(key: key);
@@ -19,7 +20,7 @@ class MainMenu extends StatelessWidget {
     // 🔹 Obtener CartProvider
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
 
-    // 🔹 Asignar la función que muestra el SnackBar cada múltiplo de 5 cervezas
+    // 🔹 Acción al llegar a múltiplos de 5 cervezas
     cartProvider.onBeerLimitReached = () {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -35,17 +36,56 @@ class MainMenu extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // 🟦 LOGO GRANDE
+            // 🟦 LOGO + CONTADOR ARRIBA A LA DERECHA
             Padding(
-              padding: const EdgeInsets.all(10),
-              child: Image.asset(
-                'assets/images/logo/logo_taberna.png',
-                height: 180,
-                fit: BoxFit.contain,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // LOGO
+                  Image.asset(
+                    'assets/images/logo/logo_taberna.png',
+                    height: 120,
+                    fit: BoxFit.contain,
+                  ),
+
+                  // CONTADOR (CERVEZAS HOY)
+                  Consumer<CartProvider>(
+                    builder: (context, cart, child) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black87,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            const Text(
+                              '🍺',
+                              style: TextStyle(fontSize: 22),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${cart.dailyBeerCount}',
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
 
-            // 🟨 TÍTULO SIMPLE
+            // 🟨 TÍTULO
             const Text(
               '¡HOLA!',
               style: TextStyle(
@@ -56,7 +96,7 @@ class MainMenu extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            // 🟩 BOTONES GRANDES Y SIMPLES
+            // 🟩 BOTONES GRANDES
             Expanded(
               child: GridView.count(
                 padding: const EdgeInsets.all(15),
@@ -108,17 +148,6 @@ class MainMenu extends StatelessWidget {
                     ),
                   ),
 
-                  // CUENTA
-                  _BigButton(
-                    image: 'assets/images/contador/contador.jpg',
-                    text: '📊 CUENTA',
-                    color: Colors.purple[400]!,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => ContadorScreen()),
-                    ),
-                  ),
-
                   // PAGAR
                   _BigButton(
                     image: 'assets/images/pagar/pagar.jpg',
@@ -139,7 +168,7 @@ class MainMenu extends StatelessWidget {
   }
 }
 
-// 🟪 BOTÓN GRANDE Y SIMPLE
+// 🟪 BOTÓN GRANDE SIMPLE
 class _BigButton extends StatelessWidget {
   final String image;
   final String text;
@@ -161,7 +190,7 @@ class _BigButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
               color: Colors.black26,
               blurRadius: 4,
@@ -207,4 +236,5 @@ class _BigButton extends StatelessWidget {
     );
   }
 }
+
 
