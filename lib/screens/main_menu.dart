@@ -23,104 +23,182 @@ class MainMenu extends StatelessWidget {
     cartProvider.onBeerLimitReached = () {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('¡Hey! Recuerda tomar agua antes de seguir bebiendo 🍺💧'),
+          content: Text('¡Toma agua! 🍺💧'),
           behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 4),
+          duration: Duration(seconds: 3),
         ),
       );
     };
 
     return Scaffold(
       backgroundColor: bg,
-      appBar: AppBar(
-        title: const Text('Principal'),
-        backgroundColor: bg,
-        elevation: 0,
-        foregroundColor: Colors.black54,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+      body: SafeArea(
         child: Column(
           children: [
-            // 🟦 LOGO + Texto "BIENVENIDO!"
-            Center(
-              child: Column(
-                children: [
-                  Image.asset(
-                    'assets/images/logo/logo_taberna.png',
-                    height: 400, // 🔹 Logo más grande
-                    fit: BoxFit.contain,
-                  ),
-                  const SizedBox(height: 15),
-                  const Text(
-                    '¡BIENVENIDO!',
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 25),
-                ],
+            // 🟦 LOGO GRANDE
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Image.asset(
+                'assets/images/logo/logo_taberna.png',
+                height: 180,
+                fit: BoxFit.contain,
               ),
             ),
 
-            // 🟨 Menú principal con grupos de imágenes
-            Center(
-              child: Wrap(
-                spacing: 20,
-                runSpacing: 20,
+            // 🟨 TÍTULO SIMPLE
+            const Text(
+              '¡HOLA!',
+              style: TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // 🟩 BOTONES GRANDES Y SIMPLES
+            Expanded(
+              child: GridView.count(
+                padding: const EdgeInsets.all(15),
+                crossAxisCount: 2,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
                 children: [
-                  MenuCard(
-                    imagePath: 'assets/images/bebidas/duff.jpg',
-                    title: 'BEBIDAS',
+                  // CERVEZA
+                  _BigButton(
+                    image: 'assets/images/bebidas/duff.jpg',
+                    text: '🍺 CERVEZA',
+                    color: Colors.amber[700]!,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => BebidasScreen()),
                     ),
                   ),
-                  MenuCard(
-                    imagePath: 'assets/images/comida/papas1.jpg',
-                    title: 'COMIDA',
+
+                  // COMIDA
+                  _BigButton(
+                    image: 'assets/images/comida/papas1.jpg',
+                    text: '🍔 COMIDA',
+                    color: Colors.orange[700]!,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => ComidaScreen()),
                     ),
                   ),
-                  MenuCard(
-                    imagePath: 'assets/images/pedidos_habituales/pedido.jpg',
-                    title: 'HABITUALES',
+
+                  // USUAL
+                  _BigButton(
+                    image: 'assets/images/pedidos_habituales/pedido.jpg',
+                    text: '⭐ USUAL',
+                    color: Colors.yellow[700]!,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => PedidosHabitualesScreen()),
                     ),
                   ),
-                  MenuCard(
-                    imagePath: 'assets/images/ubicacion/ubicacion.jpg',
-                    title: 'UBICACIÓN',
+
+                  // DÓNDE ESTOY
+                  _BigButton(
+                    image: 'assets/images/ubicacion/ubicacion.jpg',
+                    text: '🗺️ DÓNDE ESTOY',
+                    color: Colors.blue[400]!,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => UbicacionScreen()),
                     ),
                   ),
-                  MenuCard(
-                    imagePath: 'assets/images/contador/contador.jpg',
-                    title: 'CONTADOR',
+
+                  // CUENTA
+                  _BigButton(
+                    image: 'assets/images/contador/contador.jpg',
+                    text: '📊 CUENTA',
+                    color: Colors.purple[400]!,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => ContadorScreen()),
                     ),
                   ),
-                  MenuCard(
-                    imagePath: 'assets/images/pagar/pagar.jpg',
-                    title: 'PAGAR',
+
+                  // PAGAR
+                  _BigButton(
+                    image: 'assets/images/pagar/pagar.jpg',
+                    text: '💵 PAGAR',
+                    color: Colors.green[600]!,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => PagarScreen()),
                     ),
                   ),
                 ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// 🟪 BOTÓN GRANDE Y SIMPLE
+class _BigButton extends StatelessWidget {
+  final String image;
+  final String text;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _BigButton({
+    required this.image,
+    required this.text,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // IMAGEN
+            Container(
+              height: 80,
+              width: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                image: DecorationImage(
+                  image: AssetImage(image),
+                  fit: BoxFit.cover,
+                ),
+                border: Border.all(color: Colors.white, width: 3),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // TEXTO
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 5),
+              child: Text(
+                text,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
               ),
             ),
           ],

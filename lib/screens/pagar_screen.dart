@@ -10,130 +10,242 @@ class PagarScreen extends StatefulWidget {
 }
 
 class _PagarScreenState extends State<PagarScreen> {
-  final TextEditingController _debtAmountController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Pagar')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      appBar: AppBar(
+        title: const Text(
+          'PAGAR',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.green[700],
+      ),
+      body: Container(
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // DEUDA ACUMULADA
-            ListTile(
-              title: const Text('DEUDA A PAGAR'),
-              subtitle: Text('\$${cart.debt.toStringAsFixed(2)}'),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _debtAmountController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Monto a pagar de deuda',
-                prefixText: '\$',
-                hintText: 'Deja vacío para pagar toda la deuda',
+            // 🟢 DEUDA ACTUAL
+            Card(
+              color: Colors.red[100],
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'DEBO:',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                      ),
+                    ),
+                    Text(
+                      '\$${cart.debt.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
+
+            const SizedBox(height: 20),
+
+            // 🟡 PAGAR DEUDA COMPLETA
+            if (cart.debt > 0)
+              SizedBox(
+                width: double.infinity,
+                height: 60,
+                child: ElevatedButton(
+                  onPressed: () {
+                    cart.payDebt(cart.debt);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          '¡DEUDA PAGADA!',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text(
+                    'PAGAR TODA LA DEUDA',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+
+            const SizedBox(height: 30),
+
+            // 🟠 PEDIDO ACTUAL
+            Card(
+              color: Colors.amber[100],
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'PEDIDO ACTUAL:',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    Text(
+                      '\$${cart.total.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // 🟢 PAGAR AHORA
+            SizedBox(
+              width: double.infinity,
+              height: 60,
+              child: ElevatedButton(
+                onPressed: cart.total <= 0
+                    ? null
+                    : () {
+                  final totalCart = cart.total;
+                  cart.clearCart();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '¡PEDIDO LISTO! \$${totalCart.toStringAsFixed(0)}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text(
+                  'PAGAR AHORA',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+
             const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: cart.debt <= 0
-                  ? null
-                  : () {
-                final amt =
-                    double.tryParse(_debtAmountController.text) ??
-                        cart.debt;
-                if (amt <= 0) return;
-                cart.payDebt(amt);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                        'Has pagado \$${amt.toStringAsFixed(2)} de tu deuda'),
-                  ),
-                );
-                _debtAmountController.clear();
-              },
-              child: const Text('Pagar deuda'),
-            ),
-            const SizedBox(height: 20),
 
-            // BOTONES PARA EL PEDIDO ACTUAL
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: cart.total <= 0
-                        ? null
-                        : () {
-                      final totalCart = cart.total;
-                      cart.clearCart(); // solo limpia el carrito
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              '¡Tu pedido de \$${totalCart.toStringAsFixed(2)} se está preparando! 🍺🍔'),
-                        ),
-                      );
-                    },
-                    child: const Text('Pagar ahora (pedido actual)'),
+            // 🔴 PAGAR DESPUÉS
+            SizedBox(
+              width: double.infinity,
+              height: 60,
+              child: ElevatedButton(
+                onPressed: cart.total <= 0
+                    ? null
+                    : () {
+                  final totalCart = cart.total;
+                  cart.addToDebt(totalCart);
+                  cart.clearCart();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'AGREGADO A DEUDA: \$${totalCart.toStringAsFixed(0)}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text(
+                  'PAGAR DESPUÉS',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: cart.total <= 0
-                        ? null
-                        : () {
-                      final totalCart = cart.total;
-                      cart.addToDebt(totalCart); // acumula en deuda
-                      cart.clearCart();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              '¡Tu pedido se ha agregado a la deuda! \$${totalCart.toStringAsFixed(2)}'),
-                        ),
-                      );
-                    },
-                    child: const Text('Pagar después'),
-                  ),
-                ),
-              ],
+              ),
             ),
-            const SizedBox(height: 20),
 
-            // VISTA PREVIA DEL CARRITO CON BOTONES PARA QUITAR PRODUCTOS
+            const SizedBox(height: 30),
+
+            // 🟤 CARRITO ACTUAL
             const Text(
-              'Carrito (preview):',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              'MI PEDIDO:',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
+
             const SizedBox(height: 10),
+
+            // LISTA SIMPLE DEL CARRITO
             Expanded(
               child: cart.items.isEmpty
-                  ? const Center(child: Text('No hay productos en el carrito'))
+                  ? const Center(
+                child: Text(
+                  'CARRITO VACÍO',
+                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                ),
+              )
                   : ListView(
                 children: cart.items.values.map((i) {
-                  return ListTile(
-                    leading: Image.asset(
-                      i.image,
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover,
-                    ),
-                    title: Text('${i.name} x${i.quantity}'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                            '\$${(i.price * i.quantity).toStringAsFixed(2)}'),
-                        const SizedBox(width: 10),
-                        IconButton(
-                          icon: const Icon(Icons.remove_circle_outline),
-                          onPressed: () {
-                            cart.removeItem(i.id);
-                          },
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    child: ListTile(
+                      leading: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          image: DecorationImage(
+                            image: AssetImage(i.image),
+                            fit: BoxFit.cover,
+                          ),
                         ),
-                      ],
+                      ),
+                      title: Text(
+                        i.name,
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      subtitle: Text(
+                        'x${i.quantity}',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      trailing: Text(
+                        '\$${(i.price * i.quantity).toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   );
                 }).toList(),
