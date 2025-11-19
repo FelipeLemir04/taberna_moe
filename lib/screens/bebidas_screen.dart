@@ -18,25 +18,100 @@ class BebidasScreen extends StatefulWidget {
 }
 
 class _BebidasScreenState extends State<BebidasScreen> {
-  // Selección local por ítem (no se añade al carrito hasta "¡QUIERO ESTA CERVEZA!" o PONER individual)
   final Map<String, int> _selections = {};
 
-  int _sel(String id) => _selections[id] ?? 0;
+  int _getSelection(String id) => _selections[id] ?? 0;
 
-  void _inc(String id) => setState(() => _selections[id] = _sel(id) + 1);
+  void _increment(String id) => setState(() => _selections[id] = _getSelection(id) + 1);
 
-  void _dec(String id) {
-    final cur = _sel(id);
-    if (cur <= 0) return;
+  void _decrement(String id) {
+    final current = _getSelection(id);
+    if (current <= 0) return;
     setState(() {
-      _selections[id] = cur - 1;
+      _selections[id] = current - 1;
       if (_selections[id] == 0) _selections.remove(id);
+    });
+  }
+
+  void _showWaterAlert(BuildContext context, int beerCount) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.blue[50],
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Column(
+            children: [
+              Icon(
+                Icons.water_drop,
+                color: Colors.blue[700],
+                size: 60,
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                '¡RECUERDA TOMAR AGUA! 💧',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Llevas $beerCount cervezas.\n\n¡Es hora de tomar un poco de agua para mantenerte hidratado! 🍺💧',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 18,
+              color: Colors.black87,
+            ),
+          ),
+          actions: [
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue[700],
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  '¡ENTENDIDO! TOMARÉ AGUA',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final cart = Provider.of<CartProvider>(context, listen: false);
+      cart.onBeerWarning = () => _showWaterAlert(context, cart.dailyBeerCount);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context);
+
+    cart.onBeerWarning = () => _showWaterAlert(context, cart.dailyBeerCount);
 
     return Scaffold(
       appBar: AppBar(
@@ -50,30 +125,27 @@ class _BebidasScreenState extends State<BebidasScreen> {
         padding: const EdgeInsets.all(8),
         itemCount: widget.beers.length,
         itemBuilder: (context, idx) {
-          final b = widget.beers[idx];
-          final localQty = _sel(b.id);
-          final inCartQty = cart.items[b.id]?.quantity ?? 0;
+          final beer = widget.beers[idx];
+          final localQty = _getSelection(beer.id);
+          final inCartQty = cart.items[beer.id]?.quantity ?? 0;
 
           return Card(
             margin: const EdgeInsets.symmetric(vertical: 6),
             elevation: 2,
             child: Column(
               children: [
-                // Imagen
                 Container(
                   height: 250,
                   width: double.infinity,
-                  child: Image.asset(b.image, fit: BoxFit.cover),
+                  child: Image.asset(beer.image, fit: BoxFit.cover),
                 ),
-
-                // Nombre y precio
                 Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: Row(
                     children: [
                       Expanded(
                         child: Text(
-                          b.name,
+                          beer.name,
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -81,7 +153,7 @@ class _BebidasScreenState extends State<BebidasScreen> {
                         ),
                       ),
                       Text(
-                        '\$${b.price.toStringAsFixed(0)}',
+                        '\$${beer.price.toStringAsFixed(0)}',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -91,19 +163,16 @@ class _BebidasScreenState extends State<BebidasScreen> {
                     ],
                   ),
                 ),
-
-                // Controles locales
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   color: Colors.grey[100],
                   child: Row(
                     children: [
-                      // QUITAR (selección local)
                       Expanded(
                         child: SizedBox(
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: () => _dec(b.id),
+                            onPressed: () => _decrement(beer.id),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red,
                               foregroundColor: Colors.white,
@@ -112,10 +181,7 @@ class _BebidasScreenState extends State<BebidasScreen> {
                           ),
                         ),
                       ),
-
                       const SizedBox(width: 12),
-
-                      // Cantidad local
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
@@ -125,15 +191,12 @@ class _BebidasScreenState extends State<BebidasScreen> {
                         ),
                         child: Text(localQty.toString(), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                       ),
-
                       const SizedBox(width: 12),
-
-                      // PONER (selección local)
                       Expanded(
                         child: SizedBox(
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: () => _inc(b.id),
+                            onPressed: () => _increment(beer.id),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green,
                               foregroundColor: Colors.white,
@@ -145,8 +208,6 @@ class _BebidasScreenState extends State<BebidasScreen> {
                     ],
                   ),
                 ),
-
-                // Botón principal: agrega la cantidad local (o 1 si no seleccionó)
                 Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: SizedBox(
@@ -155,15 +216,15 @@ class _BebidasScreenState extends State<BebidasScreen> {
                     child: ElevatedButton(
                       onPressed: () {
                         final amountToAdd = localQty > 0 ? localQty : 1;
-                        cart.addItem(b, amount: amountToAdd);
-
-                        // limpiar selección local
+                        cart.addItem(beer, amount: amountToAdd);
                         setState(() {
-                          _selections.remove(b.id);
+                          _selections.remove(beer.id);
                         });
-
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('¡${b.name} agregada x$amountToAdd!'), backgroundColor: Colors.green),
+                          SnackBar(
+                              content: Text('¡${beer.name} agregada x$amountToAdd!'),
+                              backgroundColor: Colors.green
+                          ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -177,8 +238,6 @@ class _BebidasScreenState extends State<BebidasScreen> {
                     ),
                   ),
                 ),
-
-                // Info de carrito si ya hay unidades
                 if (inCartQty > 0)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12.0),
