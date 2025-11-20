@@ -122,7 +122,7 @@ class _MainMenuState extends State<MainMenu> {
             ),
 
             const Text(
-              '¡BIENVENIDO A LA TABERNA!',
+              '¡BIENVENIDO!',
               style: TextStyle(
                 fontSize: 36,
                 fontWeight: FontWeight.bold,
@@ -159,7 +159,7 @@ class _MainMenuState extends State<MainMenu> {
                   ),
                   _BigButton(
                     image: 'assets/images/pedidos_habituales/pedido.jpg',
-                    text: '⭐ USUAL',
+                    text: '⭐ FAVORITO',
                     color: Colors.yellow[700]!,
                     onTap: () => Navigator.push(
                       context,
