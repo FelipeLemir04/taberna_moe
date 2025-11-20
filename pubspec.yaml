@@ -12,6 +12,7 @@ dependencies:
   shared_preferences: ^2.1.1
   google_maps_flutter: ^2.4.1
   intl: ^0.18.0
+  url_launcher: ^6.1.11  # NUEVA: Para abrir mapas externos
 
 dev_dependencies:
   flutter_test:

@@ -12,13 +12,12 @@ class CartProvider with ChangeNotifier {
 
   // Callbacks de alerta
   VoidCallback? onBeerWarning;
-  VoidCallback? onBeerLimitReached;
 
   CartProvider() {
     _loadFromPrefs();
   }
 
-  // GETTERS QUE FALTABAN
+  // GETTERS
   Map<String, Item> get items => {..._items};
 
   double get total {
@@ -28,12 +27,21 @@ class CartProvider with ChangeNotifier {
   }
 
   double get debt => _debt;
-  int get dailyBeerCount => _dailyBeerCount; // ESTE FALTABA
+  int get dailyBeerCount => _dailyBeerCount;
+
+  // Cervezas en el carrito (sin contar aún)
+  int get pendingBeerCount {
+    int count = 0;
+    _items.forEach((key, item) {
+      if (item.id.toLowerCase().contains("beer")) {
+        count += item.quantity;
+      }
+    });
+    return count;
+  }
 
   void addItem(Item item, {int amount = 1}) {
-    final isBeer = item.id.toLowerCase().contains("beer");
-    final oldBeerCount = _dailyBeerCount;
-
+    // Agregar producto SIN sumar al contador de cervezas
     if (_items.containsKey(item.id)) {
       _items[item.id]!.quantity += amount;
     } else {
@@ -47,28 +55,14 @@ class CartProvider with ChangeNotifier {
       );
     }
 
-    if (isBeer) {
-      _dailyBeerCount += amount;
-      if (_dailyBeerCount >= 5 && _dailyBeerCount > oldBeerCount) {
-        if (_dailyBeerCount ~/ 5 > oldBeerCount ~/ 5) {
-          if (onBeerWarning != null) onBeerWarning!();
-        }
-      }
-    }
-
     notifyListeners();
     saveToPrefs();
   }
 
   void removeItem(String id, {int amount = 1}) {
     if (!_items.containsKey(id)) return;
-    final isBeer = id.toLowerCase().contains("beer");
 
     _items[id]!.quantity -= amount;
-    if (isBeer) {
-      _dailyBeerCount -= amount;
-      if (_dailyBeerCount < 0) _dailyBeerCount = 0;
-    }
 
     if (_items[id]!.quantity <= 0) {
       _items.remove(id);
@@ -76,6 +70,15 @@ class CartProvider with ChangeNotifier {
 
     notifyListeners();
     saveToPrefs();
+  }
+
+  // Eliminar producto completamente del carrito
+  void removeItemCompletely(String id) {
+    if (_items.containsKey(id)) {
+      _items.remove(id);
+      notifyListeners();
+      saveToPrefs();
+    }
   }
 
   void clearCart() {
@@ -92,6 +95,48 @@ class CartProvider with ChangeNotifier {
 
   void payDebt(double amount) {
     _debt = (_debt - amount).clamp(0.0, double.infinity);
+    notifyListeners();
+    saveToPrefs();
+  }
+
+  // MÉTODO CORREGIDO: Procesar pago y contar cervezas
+  void processPayment({bool addToDebt = false}) {
+    final double totalAmount = total;
+
+    // 1. Contar cervezas antes de limpiar el carrito
+    int beersToCount = 0;
+    _items.forEach((key, item) {
+      if (item.id.toLowerCase().contains("beer")) {
+        beersToCount += item.quantity;
+      }
+    });
+
+    // 2. Manejar deuda si es necesario
+    if (addToDebt) {
+      _debt += totalAmount;
+    }
+
+    // 3. Contar las cervezas en el contador diario
+    if (beersToCount > 0) {
+      final oldBeerCount = _dailyBeerCount;
+      _dailyBeerCount += beersToCount;
+
+      // 4. Verificar si debemos mostrar alerta de agua
+      if (_dailyBeerCount >= 5) {
+        final currentMultiple = _dailyBeerCount ~/ 5;
+        final previousMultiple = oldBeerCount ~/ 5;
+
+        if (currentMultiple > previousMultiple) {
+          if (onBeerWarning != null) {
+            onBeerWarning!();
+          }
+        }
+      }
+    }
+
+    // 5. Limpiar carrito después del pago
+    _items.clear();
+
     notifyListeners();
     saveToPrefs();
   }
@@ -146,13 +191,7 @@ class CartProvider with ChangeNotifier {
     }
 
     _debt = prefs.getDouble('debt') ?? 0.0;
-    _dailyBeerCount = 0;
-
-    for (var item in _items.values) {
-      if (item.id.toLowerCase().contains("beer")) {
-        _dailyBeerCount += item.quantity;
-      }
-    }
+    _dailyBeerCount = prefs.getInt('dailyBeerCount') ?? 0;
 
     _lastResetDate = prefs.getString('lastResetDate') ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
     await checkDailyReset();

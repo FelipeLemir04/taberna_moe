@@ -10,9 +10,88 @@ class PagarScreen extends StatefulWidget {
 }
 
 class _PagarScreenState extends State<PagarScreen> {
+  // Función para mostrar alerta de agua
+  void _showWaterAlert(BuildContext context, int beerCount) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.blue[50],
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Column(
+            children: [
+              Icon(
+                Icons.water_drop,
+                color: Colors.blue[700],
+                size: 60,
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                '¡RECUERDA TOMAR AGUA! 💧',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Llevas $beerCount cervezas.\n\n¡Es hora de tomar un poco de agua para mantenerte hidratado! 🍺💧',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 18,
+              color: Colors.black87,
+            ),
+          ),
+          actions: [
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue[700],
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  '¡ENTENDIDO! TOMARÉ AGUA',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Configurar el callback después de que el widget se inicialice
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final cart = Provider.of<CartProvider>(context, listen: false);
+      cart.onBeerWarning = () => _showWaterAlert(context, cart.dailyBeerCount);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context);
+
+    // Configurar el callback cada vez que se construye
+    cart.onBeerWarning = () => _showWaterAlert(context, cart.dailyBeerCount);
 
     return Scaffold(
       appBar: AppBar(
@@ -120,6 +199,20 @@ class _PagarScreenState extends State<PagarScreen> {
               ),
             ),
 
+            // Información de cervezas pendientes
+            if (cart.pendingBeerCount > 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text(
+                  'Cervezas en pedido: ${cart.pendingBeerCount}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.amber[800],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+
             const SizedBox(height: 20),
 
             // 🟢 PAGAR AHORA
@@ -131,7 +224,7 @@ class _PagarScreenState extends State<PagarScreen> {
                     ? null
                     : () {
                   final totalCart = cart.total;
-                  cart.clearCart();
+                  cart.processPayment(); // PAGAR AHORA
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
@@ -167,8 +260,7 @@ class _PagarScreenState extends State<PagarScreen> {
                     ? null
                     : () {
                   final totalCart = cart.total;
-                  cart.addToDebt(totalCart);
-                  cart.clearCart();
+                  cart.processPayment(addToDebt: true); // PAGAR DESPUÉS
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
@@ -195,7 +287,7 @@ class _PagarScreenState extends State<PagarScreen> {
 
             const SizedBox(height: 30),
 
-            // 🟤 CARRITO ACTUAL
+            // 🟤 CARRITO ACTUAL CON BOTÓN PARA ELIMINAR
             const Text(
               'MI PEDIDO:',
               style: TextStyle(
@@ -206,7 +298,7 @@ class _PagarScreenState extends State<PagarScreen> {
 
             const SizedBox(height: 10),
 
-            // LISTA SIMPLE DEL CARRITO
+            // LISTA DEL CARRITO CON BOTÓN PARA ELIMINAR - CORREGIDO
             Expanded(
               child: cart.items.isEmpty
                   ? const Center(
@@ -239,12 +331,31 @@ class _PagarScreenState extends State<PagarScreen> {
                         'x${item.quantity}',
                         style: const TextStyle(fontSize: 14),
                       ),
-                      trailing: Text(
-                        '\$${(item.price * item.quantity).toStringAsFixed(0)}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '\$${(item.price * item.quantity).toStringAsFixed(0)}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          // Botón para eliminar producto - CORREGIDO
+                          IconButton(
+                            icon: Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              cart.removeItemCompletely(item.id);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('${item.name} eliminado'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ),
                   );

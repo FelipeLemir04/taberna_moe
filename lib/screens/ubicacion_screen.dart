@@ -1,31 +1,129 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class UbicacionScreen extends StatefulWidget {
-  UbicacionScreen({Key? key}) : super(key: key);
+class UbicacionScreen extends StatelessWidget {
+  const UbicacionScreen({Key? key}) : super(key: key);
 
-  @override
-  State<UbicacionScreen> createState() => _UbicacionScreenState();
-}
+  // Coordenadas ficticias de Springfield
+  static const double latitude = 39.7831;
+  static const double longitude = -89.6501;
+  static const String address = "Calle Siempre Viva 742, Springfield";
 
-class _UbicacionScreenState extends State<UbicacionScreen> {
-  late GoogleMapController _controller;
-  final LatLng _moeLocation = LatLng(-32.889, -68.845); // ejemplo Mendoza
+  // Función para abrir Google Maps
+  void _openGoogleMaps(BuildContext context) async {
+    final url = 'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
+
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo abrir Google Maps'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Ubicación')),
-      body: GoogleMap(
-        initialCameraPosition: CameraPosition(target: _moeLocation, zoom: 16),
-        onMapCreated: (c) => _controller = c,
-        markers: {
-          Marker(markerId: const MarkerId('moe'), position: _moeLocation, infoWindow: const InfoWindow(title: 'Taberna Moe'))
-        },
+      appBar: AppBar(
+        title: const Text(
+          'UBICACIÓN',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.blue[700],
+      ),
+      body: Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Icono grande
+            Icon(
+              Icons.local_bar,
+              size: 100,
+              color: Colors.amber[700],
+            ),
+
+            const SizedBox(height: 20),
+
+            // Título
+            const Text(
+              'TABERNA DE MOE',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // Dirección
+            Text(
+              address,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 18,
+                color: Colors.grey,
+              ),
+            ),
+
+            const SizedBox(height: 30),
+
+            // Información de coordenadas
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey, width: 1),
+              ),
+              child: Text(
+                'Coordenadas: $latitude, $longitude',
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.black54,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 40),
+
+            // Botón grande de Google Maps
+            SizedBox(
+              width: double.infinity,
+              height: 70,
+              child: ElevatedButton(
+                onPressed: () => _openGoogleMaps(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.map, size: 35),
+                    SizedBox(width: 15),
+                    Text(
+                      'ABRIR EN GOOGLE MAPS',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
-
-
-

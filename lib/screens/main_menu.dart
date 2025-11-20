@@ -122,7 +122,7 @@ class _MainMenuState extends State<MainMenu> {
             ),
 
             const Text(
-              '¡HOLA!',
+              '¡BIENVENIDO A LA TABERNA!',
               style: TextStyle(
                 fontSize: 36,
                 fontWeight: FontWeight.bold,
