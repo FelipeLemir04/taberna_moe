@@ -7,10 +7,10 @@ class BebidasScreen extends StatefulWidget {
   BebidasScreen({Key? key}) : super(key: key);
 
   final List<Item> beers = [
-    Item(id: 'beer_duff', name: 'Duff Original', description: 'La clásica cerveza de Springfield.', image: 'assets/images/bebidas/duff_original.jpg', price: 120.0),
-    Item(id: 'beer_light', name: 'Duff Light', description: 'Versión ligera para los que cuidan la figura.', image: 'assets/images/bebidas/duff_light.jpg', price: 110.0),
-    Item(id: 'beer_dry', name: 'Duff Dry', description: 'Más amarga y con más cuerpo.', image: 'assets/images/bebidas/duff_dry.jpg', price: 130.0),
-    Item(id: 'beer_christmas', name: 'Duff Christmas', description: 'Edición navideña especial.', image: 'assets/images/bebidas/duff_christmas.jpg', price: 150.0),
+    Item(id: 'beer_duff', name: 'Duff Original', description: 'La clásica cerveza de Springfield.', image: 'assets/images/bebidas/duff_original.jpg', price: 5.0),
+    Item(id: 'beer_light', name: 'Duff Light', description: 'Versión ligera para los que cuidan la figura.', image: 'assets/images/bebidas/duff_light.jpg', price: 5.0),
+    Item(id: 'beer_dry', name: 'Duff Dry', description: 'Más amarga y con más cuerpo.', image: 'assets/images/bebidas/duff_dry.jpg', price: 6.0),
+    Item(id: 'beer_christmas', name: 'Duff Christmas', description: 'Edición navideña especial.', image: 'assets/images/bebidas/duff_christmas.jpg', price: 8.0),
   ];
 
   @override

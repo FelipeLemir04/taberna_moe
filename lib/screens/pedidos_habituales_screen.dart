@@ -4,10 +4,15 @@ import '../providers/cart_provider.dart';
 import '../models/item.dart';
 
 class PedidosHabitualesScreen extends StatelessWidget {
-  final List<Item> pedidosHabituales = [
-    Item(id: 'p1', name: 'Combo Homer', description: '6 Duff y 1 Hamburguesa', image: 'assets/images/pedidos/pedido1.jpg', price: 10.0),
-    Item(id: 'p2', name: 'Combo Moe', description: '4 Duff Dry y 2 Porciones de Papas', image: 'assets/images/comida/papas2.jpg', price: 9.0),
-    Item(id: 'p3', name: 'Combo Barney', description: '10 Duff + Nachos gratis', image: 'assets/images/bebidas/duff_dry.jpg', price: 12.0),
+  // Solo el combo favorito de Homero
+  final List<Item> favoritos = [
+    Item(
+        id: 'combo_homer',
+        name: 'COMBO HOMER',
+        description: '12 Donuts + 6 Cervezas + Nachos Gigantes',
+        image: 'assets/images/pedidos/pedido1.jpg',
+        price: 25.0
+    ),
   ];
 
   @override
@@ -17,10 +22,10 @@ class PedidosHabitualesScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'PEDIDOS USUALES',
+          'FAVORITOS',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.purple[700],
+        backgroundColor: Colors.pink[700],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -29,7 +34,7 @@ class PedidosHabitualesScreen extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.only(bottom: 20),
             child: Text(
-              'TUS COMBOS FAVORITOS',
+              'EL FAVORITO DE HOMERO',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 24,
@@ -39,94 +44,118 @@ class PedidosHabitualesScreen extends StatelessWidget {
             ),
           ),
 
-          // Combos grandes y simples
-          ...pedidosHabituales.map((pedido) {
+          // Combo único de Homero
+          ...favoritos.map((favorito) {
             return Card(
               margin: const EdgeInsets.symmetric(vertical: 8),
-              elevation: 3,
+              elevation: 5,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    // Imagen del combo
+                    // Iconos del combo
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _ItemIcon(icon: Icons.cake, color: Colors.pink, label: '12 DONUTS'),
+                        _ItemIcon(icon: Icons.local_bar, color: Colors.amber, label: '6 CERVEZAS'),
+                        _ItemIcon(icon: Icons.restaurant, color: Colors.orange, label: 'NACHOS GIGANTES'),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Nombre del combo
+                    Text(
+                      favorito.name,
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.pink,
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Descripción
+                    Text(
+                      favorito.description,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    // Precio grande
                     Container(
-                      height: 120,
-                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        image: DecorationImage(
-                          image: AssetImage(pedido.image),
-                          fit: BoxFit.cover,
+                        color: Colors.green[50],
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.green, width: 2),
+                      ),
+                      child: Text(
+                        '\$${favorito.price.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 12),
-
-                    // Nombre del combo
-                    Text(
-                      pedido.name,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple,
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    // Descripción simple
-                    Text(
-                      _simplificarDescripcion(pedido.description),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.black87,
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Precio grande
-                    Text(
-                      '\$${pedido.price.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
 
                     // Botón enorme para agregar
                     SizedBox(
                       width: double.infinity,
-                      height: 50,
+                      height: 60,
                       child: ElevatedButton(
                         onPressed: () {
-                          cart.addItem(pedido);
+                          cart.addItem(favorito);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
+                            const SnackBar(
                               content: Text(
-                                '¡${pedido.name} AGREGADO!',
-                                style: const TextStyle(fontSize: 16),
+                                '¡COMBO HOMER AGREGADO! 🍩🍺',
+                                style: TextStyle(fontSize: 16),
                               ),
-                              backgroundColor: Colors.green,
+                              backgroundColor: Colors.pink,
                             ),
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.purple[700],
+                          backgroundColor: Colors.pink[700],
                           foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
                         ),
                         child: const Text(
                           '¡QUIERO ESTE COMBO!',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Mensaje especial
+                    const Text(
+                      '¡El combo perfecto para Homero!',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                        fontStyle: FontStyle.italic,
                       ),
                     ),
                   ],
@@ -134,20 +163,80 @@ class PedidosHabitualesScreen extends StatelessWidget {
               ),
             );
           }).toList(),
+
+          // Información adicional
+          const Padding(
+            padding: EdgeInsets.only(top: 20),
+            child: Card(
+              color: Colors.amber,
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Text(
+                      '🍩 ¡EL COMBO MÁS PEDIDO! 🍺',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      '12 donuts glaseados + 6 cervezas Duff + Nachos extra grandes',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
+}
 
-  // Función para simplificar las descripciones
-  String _simplificarDescripcion(String descripcion) {
-    if (descripcion.contains('6 Duff y 1 Hamburguesa')) {
-      return '6 Cervezas + 1 Hamburguesa';
-    } else if (descripcion.contains('4 Duff Dry y 2 Porciones de Papas')) {
-      return '4 Cervezas + 2 Papas';
-    } else if (descripcion.contains('10 Duff + Nachos gratis')) {
-      return '10 Cervezas + Nachos Gratis';
-    }
-    return descripcion;
+// Widget para los iconos de los items
+class _ItemIcon extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String label;
+
+  const _ItemIcon({
+    required this.icon,
+    required this.color,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: color.withAlpha(50),
+            shape: BoxShape.circle,
+            border: Border.all(color: color, width: 2),
+          ),
+          child: Icon(icon, color: color, size: 30),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ],
+    );
   }
 }
