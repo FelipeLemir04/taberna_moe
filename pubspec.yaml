@@ -13,6 +13,7 @@ dependencies:
   google_maps_flutter: ^2.4.1
   intl: ^0.18.0
   url_launcher: ^6.1.11  # NUEVA: Para abrir mapas externos
+  audioplayers: ^5.2.1  # ✅ AGREGAR ESTA LÍNEA
 
 dev_dependencies:
   flutter_test:
@@ -28,3 +29,4 @@ flutter:
     - assets/images/pagar/
     - assets/images/ubicacion/
     - assets/images/pedidos_habituales/
+    - assets/sounds/
